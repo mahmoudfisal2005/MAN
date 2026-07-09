@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Premium Sports Graphic - Pro Editor</title>
+    
+    <!-- الخطوط -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Montserrat:wght@500;600;700;800;900&family=Oswald:ital,wght@0,500;0,700;0,800;1,700;1,800&display=swap" rel="stylesheet">
+    
+    <!-- مكتبة استخراج الصورة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        /* =========================================
+           ألوان التصميم (Design System) - Premium
+           ========================================= */
+        :root {
+            --gold-light: #fde48e; --gold-base: #d2a13a; --gold-dark: #8b6214; --gold-shadow: #593b05;
+            --silver-light: #ffffff; --silver-base: #cccccc; --silver-dark: #888888; --silver-shadow: #444444;
+            --bronze-light: #f59f6d; --bronze-base: #c25f32; --bronze-dark: #7a3212; --bronze-shadow: #4a1905;
+            
+            --bg-dark: #0f151e; 
+            --card-dark: #192330;
+            --card-light: #2b394b;
+            
+            --font-title: 'Oswald', sans-serif;
+            --font-ui: 'Montserrat', sans-serif;
+            --font-arabic: 'Cairo', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: var(--font-arabic);
+            color: #fff;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            touch-action: none; 
+        }
+
+        .preview-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        #poster {
+            width: 1080px !important;
+            height: 1350px !important;
+            min-width: 1080px !important;
+            min-height: 1350px !important;
+            background: radial-gradient(circle at 50% 30%, #1e2c40 0%, var(--bg-dark) 80%);
+            position: relative;
+            box-sizing: border-box;
+            transform-origin: top center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            direction: ltr;
+            overflow: hidden;
+        }
+
+        #poster::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+
+        /* =========================================
+           عناصر الهيدر
+           ========================================= */
+        .header {
+            position: absolute;
+            top: 70px;
+            left: 60px;
+            width: 960px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        .main-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: var(--font-title);
+            font-style: italic;
+            text-shadow: 0px 8px 15px rgba(0,0,0,0.8);
+        }
+
+        .title-large {
+            font-size: 150px;
+            font-weight: 800;
+            line-height: 0.85;
+            color: #ffffff;
+            white-space: nowrap;
+            letter-spacing: -2px;
+        }
+
+        .title-stacked {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 45px;
+            font-weight: 800;
+            line-height: 0.95;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .top-flags-container { display: flex; align-items: center; }
+        .top-flag {
+            width: 80px; height: 80px; border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+            object-fit: cover; margin-left: -25px; background: var(--card-light);
+            position: relative; z-index: 2; display: block;
+        }
+        .top-flag:first-child { z-index: 1; }
+
+        .flag-placeholder {
+            width: 80px; height: 80px; border-radius: 50%; margin-left: -25px; 
+            background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.2);
+        }
+
+        /* =========================================
+           البطاقات 
+           ========================================= */
+        .cards-container {
+            position: absolute; top: 260px; left: 60px; width: 960px;
+            display: flex; flex-direction: column; gap: 70px; z-index: 10;
+        }
+
+        .card {
+            width: 960px; height: 260px;
+            background: linear-gradient(180deg, var(--card-light) 0%, var(--card-dark) 100%);
+            border-radius: 20px; position: relative;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.7), inset 0 3px 8px rgba(255,255,255,0.15), inset 0 -5px 15px rgba(0,0,0,0.8);
+            display: flex;
+        }
+
+        .theme-gold { border-top: 1px solid rgba(210, 161, 58, 0.4); border-bottom: 2px solid #000; }
+        .theme-silver { border-top: 1px solid rgba(204, 204, 204, 0.4); border-bottom: 2px solid #000; }
+        .theme-bronze { border-top: 1px solid rgba(194, 95, 50, 0.4); border-bottom: 2px solid #000; }
+
+        .card-name-strip {
+            width: 70px; height: 100%;
+            background: linear-gradient(90deg, #f0f0f0 0%, #a0a0a0 100%);
+            border-radius: 20px 0 0 20px;
+            position: relative; z-index: 6;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5), inset 2px 0 5px rgba(255,255,255,0.5);
+        }
+
+        .card-name {
+            writing-mode: vertical-rl; transform: rotate(180deg);
+            font-family: var(--font-title); font-size: 32px; font-weight: 800;
+            color: #444; letter-spacing: 5px; text-transform: uppercase;
+        }
+
+        .card-flag-area {
+            position: absolute; left: 70px; top: 0; width: 450px; height: 100%;
+            overflow: hidden; z-index: 1; border-radius: 0 20px 20px 0;
+        }
+
+        .card-flag-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; display: block; }
+        
+        .flag-fade {
+            position: absolute; inset: 0;
+            background: linear-gradient(to right, transparent 0%, transparent 20%, rgba(25, 35, 48, 0.7) 60%, rgba(25, 35, 48, 1) 100%);
+        }
+        .flag-inner-shadow {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.5) 100%);
+            border-left: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .card-player {
+            position: absolute; 
+            bottom: 0; left: 200px;
+            height: 380px; width: auto; max-width: 450px;
+            z-index: 10; 
+            filter: drop-shadow(15px 15px 20px rgba(0,0,0,0.8)); 
+            object-fit: contain; object-position: bottom;
+            cursor: grab;
+            display: block;
+        }
+        .card-player:active { cursor: grabbing; }
+
+        .card-content {
+            position: absolute; right: 40px; top: 0; height: 100%;
+            display: flex; align-items: center; gap: 30px; z-index: 5; 
+            font-family: var(--font-ui);
+        }
+
+        .card-stats { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding-top: 10px;}
+        
+        .stat-label { font-family: var(--font-title); font-size: 55px; font-weight: 800; font-style: italic; line-height: 1; letter-spacing: 2px; }
+        .stat-value { font-size: 22px; font-weight: 600; margin-top: 5px; text-transform: uppercase; color: #fff; letter-spacing: 1px;}
+        
+        .card-rank { 
+            font-family: var(--font-title); font-size: 220px; font-weight: 800; font-style: italic; line-height: 1; 
+            display: flex; align-items: baseline; position: relative; top: 15px; z-index: 2;
+        }
+        .card-rank .dot { font-size: 100px; margin-left: -5px; }
+
+        .rank-glow {
+            position: absolute; top: 50%; left: 45%;
+            transform: translate(-50%, -50%);
+            width: 300px; height: 300px; border-radius: 50%;
+            z-index: -1; pointer-events: none;
+        }
+
+        /* GOLD */
+        .theme-gold .stat-label { color: var(--gold-light); text-shadow: 1px 1px 0 var(--gold-base), 2px 2px 0 var(--gold-dark), 3px 3px 0 var(--gold-shadow), 5px 5px 10px rgba(0,0,0,0.8); }
+        .theme-gold .card-rank { color: var(--gold-light); text-shadow: 2px 2px 0 var(--gold-base), 4px 4px 0 var(--gold-dark), 6px 6px 0 var(--gold-shadow), 8px 8px 0 #3a2603, 12px 15px 20px rgba(0,0,0,0.9); }
+        .theme-gold .rank-glow { background: radial-gradient(circle, rgba(210, 161, 58, 0.4) 0%, transparent 60%); }
+
+        /* SILVER */
+        .theme-silver .stat-label { color: var(--silver-light); text-shadow: 1px 1px 0 var(--silver-base), 2px 2px 0 var(--silver-dark), 3px 3px 0 var(--silver-shadow), 5px 5px 10px rgba(0,0,0,0.8); }
+        .theme-silver .card-rank { color: var(--silver-light); text-shadow: 2px 2px 0 var(--silver-base), 4px 4px 0 var(--silver-dark), 6px 6px 0 var(--silver-shadow), 8px 8px 0 #222222, 12px 15px 20px rgba(0,0,0,0.9); }
+        .theme-silver .rank-glow { background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%); }
+
+        /* BRONZE */
+        .theme-bronze .stat-label { color: var(--bronze-light); text-shadow: 1px 1px 0 var(--bronze-base), 2px 2px 0 var(--bronze-dark), 3px 3px 0 var(--bronze-shadow), 5px 5px 10px rgba(0,0,0,0.8); }
+        .theme-bronze .card-rank { color: var(--bronze-light); text-shadow: 2px 2px 0 var(--bronze-base), 4px 4px 0 var(--bronze-dark), 6px 6px 0 var(--bronze-shadow), 8px 8px 0 #311103, 12px 15px 20px rgba(0,0,0,0.9); }
+        .theme-bronze .rank-glow { background: radial-gradient(circle, rgba(194, 95, 50, 0.4) 0%, transparent 60%); }
+
+        /* =========================================
+           لوحة التحكم والنوافذ
+           ========================================= */
+        .controls {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(15, 23, 42, 0.95); padding: 15px;
+            display: flex; justify-content: center; gap: 10px;
+            z-index: 1000; backdrop-filter: blur(10px); box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
+            box-sizing: border-box; border-top: 1px solid #334155;
+        }
+
+        .btn {
+            flex: 1; max-width: 200px; padding: 15px 10px; font-size: 16px;
+            border: none; border-radius: 12px; font-family: var(--font-arabic); font-weight: 800;
+            cursor: pointer; text-align: center; transition: 0.2s;
+        }
+
+        .btn-export { background: linear-gradient(135deg, var(--gold-base), var(--gold-dark)); color: #000; box-shadow: 0 4px 15px rgba(210, 161, 58, 0.4);}
+        .btn-edit { background: #1e293b; color: #fff; border: 1px solid #475569; }
+        
+        .hint-text {
+            position: fixed; top: 10px; background: rgba(0,0,0,0.7); color: #fff; 
+            padding: 5px 15px; border-radius: 20px; font-size: 12px; z-index: 500; pointer-events: none;
+        }
+
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 2000;
+            display: none; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 20px; box-sizing: border-box; overflow-y: auto;
+        }
+        
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #1e293b; width: 100%; max-width: 500px;
+            border-radius: 16px; padding: 20px; margin-bottom: 80px;
+        }
+        
+        #export-modal { justify-content: center; }
+        #export-modal .modal-content { margin-bottom: 0; text-align: center; }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 20px;
+        }
+
+        .modal-title { font-size: 20px; font-weight: 800; margin: 0; color: var(--gold-base); }
+        .close-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+
+        .editor-section { background: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
+        .editor-section h3 { margin: 0 0 15px 0; font-size: 16px; color: #94a3b8; }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 14px; margin-bottom: 5px; color: #cbd5e1; }
+        .input-group input[type="text"] {
+            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569;
+            background: #1e293b; color: #fff; font-family: var(--font-arabic); box-sizing: border-box;
+        }
+        
+        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
+        .file-input-btn {
+            border: 2px dashed #475569; color: #94a3b8; background: #1e293b;
+            padding: 10px; border-radius: 8px; text-align: center; font-size: 14px; display: block;
+            transition: all 0.3s;
+        }
+        .file-input-wrapper input[type="file"] {
+            font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hint-text">👆 يمكنك لمس وسحب صور اللاعبين لتحريكها</div>
+
+    <div class="preview-container" id="preview-container">
+        <div id="poster">
+            <div class="header">
+                <div id="main-title" class="main-title">
+                    <span class="title-large">MAN</span><div class="title-stacked"><span>OF</span><span>THE</span></div><span class="title-large">MATCH</span>
+                </div>
+                <div id="top-flags" class="top-flags-container"></div>
+            </div>
+            <div id="cards-container" class="cards-container"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-edit" onclick="toggleModal('edit-modal', true)">✏️ تعديل البيانات</button>
+        <button class="btn btn-export" id="btn-export" onclick="exportPNG()">⬇️ تصدير وحفظ HD</button>
+    </div>
+
+    <!-- نافذة تعديل البيانات -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">لوحة تعديل التصميم</h2>
+                <button class="close-btn" onclick="toggleModal('edit-modal', false)">✖</button>
+            </div>
+
+            <div class="editor-section">
+                <h3>الأعلام العلوية</h3>
+                <div class="input-group">
+                    <label>العلم الأول (الخلفي)</label>
+                    <div class="file-input-wrapper">
+                        <div class="file-input-btn">📂 اختر صورة...</div>
+                        <input type="file" accept="image/*" onchange="updateImage(event, 'topFlag', 0)">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>العلم الثاني (الأمامي)</label>
+                    <div class="file-input-wrapper">
+                        <div class="file-input-btn">📂 اختر صورة...</div>
+                        <input type="file" accept="image/*" onchange="updateImage(event, 'topFlag', 1)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- المراكز -->
+            <div class="editor-section" style="border-right: 4px solid var(--gold-base)">
+                <h3>المركز الأول (ذهبي)</h3>
+                <div class="input-group"><label>اسم اللاعب</label><input type="text" id="name-0" oninput="updateText('name', 0)" value="MBAPPE"></div>
+                <div class="input-group"><label>الإحصائية</label><input type="text" id="stat-0" oninput="updateText('stat', 0)" value="1 GOAL"></div>
+                <div class="input-group"><label>صورة اللاعب</label><div class="file-input-wrapper"><div class="file-input-btn">👤 اختر صورة...</div><input type="file" accept="image/*" onchange="updateImage(event, 'player', 0)"></div></div>
+                <div class="input-group"><label>علم اللاعب</label><div class="file-input-wrapper"><div class="file-input-btn">🏳️ اختر صورة...</div><input type="file" accept="image/*" onchange="updateImage(event, 'flag', 0)"></div></div>
+            </div>
+
+            <div class="editor-section" style="border-right: 4px solid var(--silver-base)">
+                <h3>المركز الثاني (فضي)</h3>
+                <div class="input-group"><label>اسم اللاعب</label><input type="text" id="name-1" oninput="updateText('name', 1)" value="CUBAS"></div>
+                <div class="input-group"><label>الإحصائية</label><input type="text" id="stat-1" oninput="updateText('stat', 1)" value="—"></div>
+                <div class="input-group"><label>صورة اللاعب</label><div class="file-input-wrapper"><div class="file-input-btn">👤 اختر صورة...</div><input type="file" accept="image/*" onchange="updateImage(event, 'player', 1)"></div></div>
+                <div class="input-group"><label>علم اللاعب</label><div class="file-input-wrapper"><div class="file-input-btn">🏳️ اختر صورة...</div><input type="file" accept="image/*" onchange="updateImage(event, 'flag', 1)"></div></div>
+            </div>
+
+            <div class="editor-section" style="border-right: 4px solid var(--bronze-base)">
+                <h3>المركز الثالث (برونزي)</h3>
+                <div class="input-group"><label>اسم اللاعب</label><input type="text" id="name-2" oninput="updateText('name', 2)" value="UPAMECANO"></div>
+                <div class="input-group"><label>الإحصائية</label><input type="text" id="stat-2" oninput="updateText('stat', 2)" value="—"></div>
+                <div class="input-group"><label>صورة اللاعب</label><div class="file-input-wrapper"><div class="file-input-btn">👤 اختر صورة...</div><input type="file" accept="image/*" onchange="updateImage(event, 'player', 2)"></div></div>
+                <div class="input-group"><label>علم اللاعب</label><div class="file-input-wrapper"><div class="file-input-btn">🏳️ اختر صورة...</div><input type="file" accept="image/*" onchange="updateImage(event, 'flag', 2)"></div></div>
+            </div>
+            
+            <button class="btn btn-export" style="width:100%; max-width:none; margin-top:10px; color:#000;" onclick="toggleModal('edit-modal', false)">إغلاق ومعاينة</button>
+        </div>
+    </div>
+
+    <!-- نافذة الحل البديل (لو فشلت المشاركة) -->
+    <div class="modal" id="export-modal">
+        <div class="modal-content">
+            <h2 class="modal-title" style="margin-bottom: 10px; font-size: 24px;">✅ الصورة جاهزة!</h2>
+            <p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px; line-height: 1.5;">
+                <strong style="color:#fff;">اضغط مطولاً على الصورة بالأسفل</strong> واختر "حفظ الصورة" أو "Save Image".
+            </p>
+            <img id="exported-image" style="max-width: 100%; height: auto; border-radius: 12px; border: 2px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+            <button class="btn btn-edit" style="width: 100%; max-width: none; margin-top: 20px;" onclick="toggleModal('export-modal', false)">إغلاق</button>
+        </div>
+    </div>
+
+    <script>
+        let topFlagsData = [null, null];
+        let cardsData = [
+            { name: "MBAPPE", stat: "1 GOAL", playerImg: null, flagImg: null, rank: 1, theme: "gold", marginX: 0, marginY: 0 },
+            { name: "CUBAS", stat: "—", playerImg: null, flagImg: null, rank: 2, theme: "silver", marginX: 0, marginY: 0 },
+            { name: "UPAMECANO", stat: "—", playerImg: null, flagImg: null, rank: 3, theme: "bronze", marginX: 0, marginY: 0 }
+        ];
+
+        function renderPoster() {
+            document.getElementById('top-flags').innerHTML = topFlagsData.map((img) => 
+                img ? `<img src="${img}" class="top-flag">` : `<div class="flag-placeholder"></div>`
+            ).join('');
+
+            document.getElementById('cards-container').innerHTML = cardsData.map((card, index) => {
+                const flagHtml = card.flagImg ? `<img class="card-flag-img" src="${card.flagImg}">` : '';
+                const playerHtml = card.playerImg ? `<img class="card-player" data-index="${index}" style="margin-left: ${card.marginX}px; margin-bottom: ${card.marginY}px;" src="${card.playerImg}">` : '';
+                
+                return `
+                <div class="card theme-${card.theme}">
+                    <div class="card-name-strip">
+                        <div class="card-name">${card.name}</div>
+                    </div>
+                    
+                    <div class="card-flag-area">
+                        ${flagHtml}
+                        <div class="flag-fade"></div>
+                        <div class="flag-inner-shadow"></div>
+                    </div>
+                    
+                    ${playerHtml}
+                    
+                    <div class="card-content">
+                        <div class="card-stats">
+                            <div class="stat-label">RANK</div>
+                            <div class="stat-value">${card.stat}</div>
+                        </div>
+                        <div class="card-rank">
+                            <div class="rank-glow"></div>
+                            ${card.rank}<span class="dot">.</span>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+            
+            scaleForMobile();
+        }
+
+        // --- نظام السحب ---
+        let activeDragElement = null;
+        let activeDragIndex = -1;
+        let startX, startY;
+        let initialMarginX, initialMarginY;
+        let posterScale = 1;
+
+        function startDrag(e) {
+            if(e.target.classList.contains('card-player')) {
+                activeDragElement = e.target;
+                activeDragIndex = parseInt(activeDragElement.getAttribute('data-index'));
+                
+                const poster = document.getElementById('poster');
+                posterScale = poster.getBoundingClientRect().width / 1080;
+
+                startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+                initialMarginX = cardsData[activeDragIndex].marginX || 0;
+                initialMarginY = cardsData[activeDragIndex].marginY || 0;
+            }
+        }
+
+        function moveDrag(e) {
+            if(!activeDragElement) return;
+            e.preventDefault(); 
+
+            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+            const dx = (clientX - startX) / posterScale;
+            const dy = (clientY - startY) / posterScale; 
+
+            const newMarginX = initialMarginX + dx;
+            const newMarginY = initialMarginY - dy; 
+
+            activeDragElement.style.marginLeft = `${newMarginX}px`;
+            activeDragElement.style.marginBottom = `${newMarginY}px`;
+            
+            cardsData[activeDragIndex].marginX = newMarginX;
+            cardsData[activeDragIndex].marginY = newMarginY;
+        }
+
+        function endDrag() { activeDragElement = null; activeDragIndex = -1; }
+
+        document.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', moveDrag, {passive: false});
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchstart', startDrag, {passive: false});
+        document.addEventListener('touchmove', moveDrag, {passive: false});
+        document.addEventListener('touchend', endDrag);
+
+        // --- التحديث الجديد: تحويل الصور إلى نصوص Base64 لتجنب حظر الـ CORS ---
+        function updateImage(event, type, index) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const btnUI = event.target.previousElementSibling;
+            btnUI.innerText = "✅ تم الاختيار";
+            btnUI.style.borderColor = "var(--gold-base)";
+            btnUI.style.color = "#fff";
+
+            // استخدام FileReader بدلاً من URL المؤقت لضمان توافقه مع كافة التطبيقات والمتصفحات
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                
+                if (type === 'topFlag') topFlagsData[index] = base64Image;
+                else if (type === 'player') {
+                    cardsData[index].playerImg = base64Image;
+                    cardsData[index].marginX = 0; cardsData[index].marginY = 0;
+                } 
+                else if (type === 'flag') cardsData[index].flagImg = base64Image;
+                
+                renderPoster();
+            };
+            reader.readAsDataURL(file); // هذه الخطوة هي التي تمنع ظهور المربعات الرمادية نهائياً!
+        }
+
+        function updateText(type, index) {
+            const val = document.getElementById(`${type}-${index}`).value;
+            if (type === 'name') cardsData[index].name = val;
+            if (type === 'stat') cardsData[index].stat = val;
+            renderPoster();
+        }
+
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            if (show) modal.classList.add('active');
+            else modal.classList.remove('active');
+        }
+
+        function scaleForMobile() {
+            const container = document.getElementById('preview-container');
+            const poster = document.getElementById('poster');
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight - 80;
+            
+            let scale = (containerWidth / 1080) * 0.95; 
+            if (1350 * scale > containerHeight) scale = (containerHeight / 1350) * 0.95;
+            
+            poster.style.transform = `scale(${scale})`;
+        }
+        window.addEventListener('resize', scaleForMobile);
+
+        // --- نظام التصدير ---
+        async function exportPNG() {
+            const btn = document.getElementById('btn-export');
+            const originalText = btn.innerText;
+            btn.innerText = '⏳ جاري المعالجة...';
+            btn.style.opacity = '0.7';
+
+            const poster = document.getElementById('poster');
+            const originalTransform = poster.style.transform;
+            
+            window.scrollTo(0, 0);
+            document.body.style.overflow = 'hidden';
+            poster.style.transform = 'none'; 
+            document.querySelector('.hint-text').style.display = 'none';
+            
+            await new Promise(resolve => setTimeout(resolve, 500)); 
+
+            try {
+                const canvas = await html2canvas(poster, {
+                    scale: 2, 
+                    useCORS: true, 
+                    allowTaint: true, // ضروري جداً
+                    backgroundColor: '#0f151e', 
+                    width: 1080, height: 1350, 
+                    windowWidth: 1080, windowHeight: 1350,
+                    x: 0, y: 0, scrollX: 0, scrollY: 0,
+                    logging: false
+                });
+
+                poster.style.transform = originalTransform; 
+                document.body.style.overflow = '';
+                document.querySelector('.hint-text').style.display = 'block';
+                
+                const dataUrl = canvas.toDataURL('image/png', 1.0);
+                
+                // محاولة 1: نافذة المشاركة الأساسية (للهواتف)
+                try {
+                    canvas.toBlob(async function(blob) {
+                        if (navigator.share && navigator.canShare) {
+                            const file = new File([blob], 'Man_Of_The_Match.png', { type: 'image/png' });
+                            if (navigator.canShare({ files: [file] })) {
+                                await navigator.share({ title: 'Man Of The Match', files: [file] });
+                                btn.innerText = '✅ تم بنجاح';
+                                setTimeout(() => { btn.innerText = originalText; btn.style.opacity = '1'; }, 2000);
+                                return;
+                            }
+                        }
+                    });
+                } catch(e) { console.log(e); }
+
+                // محاولة 2: تحميل تلقائي (للكمبيوتر)
+                try {
+                    const link = document.createElement('a');
+                    link.download = 'Man_Of_The_Match.png';
+                    link.href = dataUrl;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch(e) { console.log(e); }
+
+                // محاولة 3 المضمونة: إظهار نافذة الضغط المطول
+                document.getElementById('exported-image').src = dataUrl;
+                toggleModal('export-modal', true);
+
+                btn.innerText = '✅ اكتمل';
+                setTimeout(() => { btn.innerText = originalText; btn.style.opacity = '1'; }, 2000);
+                
+            } catch (err) {
+                console.error(err);
+                poster.style.transform = originalTransform;
+                document.body.style.overflow = '';
+                document.querySelector('.hint-text').style.display = 'block';
+                btn.innerText = '❌ حدث خطأ';
+                setTimeout(() => { btn.innerText = originalText; btn.style.opacity = '1'; }, 3000);
+            }
+        }
+
+        window.onload = () => {
+            renderPoster();
+            document.fonts.ready.then(() => scaleForMobile());
+        };
+    </script>
+</body>
+</html>
+
+
